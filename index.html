@@ -7,6 +7,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <script>
+    // FOUC önleyici: Tercih edilen veya kaydedilmiş temayı sayfa yüklenmeden uygular
+    (function() {
+      try {
+        const savedTheme = localStorage.getItem('idw_theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+
   <style>
     :root {
       --bg: #0c0d10;
@@ -19,6 +34,7 @@
       --acc: #8e99cc;
       --acc-soft: rgba(142, 153, 204, 0.12);
       --acc-ink: #0d0f17;
+      --danger: #e06c75;
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
       --radius: 14px;
     }
@@ -34,6 +50,7 @@
       --acc: #5e6ad2;
       --acc-soft: rgba(94, 106, 210, 0.1);
       --acc-ink: #ffffff;
+      --danger: #d94545;
     }
 
     * {
@@ -51,7 +68,25 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      transition: background-color 0.4s var(--ease), color 0.4s;
+      transition: background-color 0.3s var(--ease), color 0.3s;
+      overflow-x: hidden;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 3px;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     /* Header & IDW Logo */
@@ -59,8 +94,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 24px 36px;
-      max-width: 1200px;
+      padding: 20px 24px;
+      max-width: 1000px;
       margin: 0 auto;
       width: 100%;
     }
@@ -73,6 +108,7 @@
       display: inline-flex;
       user-select: none;
       color: var(--ink);
+      text-decoration: none;
     }
 
     .logo span {
@@ -81,7 +117,7 @@
     }
 
     .logo:hover span {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
     }
     .logo:hover span:nth-child(2) {
       color: var(--acc);
@@ -91,15 +127,11 @@
       transition-delay: 0.1s;
     }
 
-    .nav-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
     .btn-circle {
-      width: 38px;
-      height: 38px;
+      min-width: 44px;
+      min-height: 44px;
+      width: 44px;
+      height: 44px;
       border: 0;
       border-radius: 50%;
       background: var(--soft);
@@ -123,7 +155,7 @@
     .btn-circle svg {
       width: 18px;
       height: 18px;
-      stroke-width: 1.8;
+      stroke-width: 2;
       stroke: currentColor;
       fill: none;
     }
@@ -134,17 +166,16 @@
       max-width: 900px;
       width: 100%;
       margin: 0 auto;
-      padding: 20px 24px 80px;
+      padding: 12px 20px 60px;
     }
 
     .hero {
       text-align: center;
-      margin-bottom: 36px;
-      animation: fadeIn 0.6s var(--ease);
+      margin-bottom: 30px;
     }
 
     .hero h1 {
-      font-size: 32px;
+      font-size: clamp(24px, 5vw, 32px);
       font-weight: 700;
       letter-spacing: -0.03em;
       margin-bottom: 8px;
@@ -152,64 +183,81 @@
 
     .hero p {
       color: var(--mute);
-      font-size: 15px;
+      font-size: clamp(13px, 3.5vw, 15px);
     }
 
-    /* Tabs */
-    .tabs {
+    /* Tabs Bar (Mobile Optimized) */
+    .tabs-wrapper {
+      width: 100%;
+      overflow-x: auto;
       display: flex;
       justify-content: center;
-      gap: 6px;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+    .tabs-wrapper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tabs {
+      display: inline-flex;
       background: var(--soft);
-      padding: 5px;
+      padding: 4px;
       border-radius: 999px;
-      width: fit-content;
-      margin: 0 auto 36px;
-      animation: fadeIn 0.7s var(--ease);
+      white-space: nowrap;
+      min-width: fit-content;
     }
 
     .tab-btn {
       border: 0;
       background: transparent;
       color: var(--mute);
-      padding: 8px 18px;
+      padding: 10px 18px;
+      min-height: 44px;
       font-size: 13px;
       font-weight: 600;
       border-radius: 999px;
       cursor: pointer;
-      transition: all 0.3s var(--ease);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s var(--ease);
     }
 
-    .tab-btn.active {
+    .tab-btn[aria-selected="true"] {
       background: var(--card);
       color: var(--ink);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
       transform: scale(1.02);
     }
 
-    /* Tool Panels */
+    /* Panels */
     .panel {
-      display: none;
       background: var(--card);
       border-radius: var(--radius);
-      padding: 32px;
-      animation: slideUp 0.4s var(--ease);
+      padding: 24px;
+      display: none;
     }
 
-    .panel.active {
+    .panel:not([hidden]) {
       display: block;
+      animation: slideUp 0.35s var(--ease);
     }
 
-    /* PNG Canvas Tool */
+    /* Grid Layouts */
     .grid-2 {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
     }
 
     @media (max-width: 768px) {
       .grid-2 {
         grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .panel {
+        padding: 18px;
       }
     }
 
@@ -219,11 +267,11 @@
 
     .label {
       display: block;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
       color: var(--mute);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.06em;
       margin-bottom: 10px;
     }
 
@@ -237,59 +285,86 @@
       border: 0;
       background: var(--soft);
       color: var(--ink);
-      padding: 8px 14px;
+      padding: 0 16px;
+      height: 44px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 500;
       cursor: pointer;
-      transition: background 0.25s, transform 0.25s var(--ease), color 0.25s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s var(--ease), color 0.2s;
     }
 
     .chip:hover {
       background: var(--soft-hover);
-      transform: translateY(-2px);
     }
 
-    .chip.active {
+    .chip[aria-checked="true"] {
       background: var(--acc);
       color: var(--acc-ink);
+      font-weight: 600;
     }
 
     .input-row {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
     }
 
     .field-wrap {
       flex: 1;
       display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .field-container {
+      display: flex;
       align-items: center;
       background: var(--soft);
       border-radius: 12px;
       padding: 0 14px;
-      height: 44px;
-      transition: background 0.25s;
+      height: 48px;
+      transition: background 0.25s, box-shadow 0.25s;
     }
 
-    .field-wrap span {
+    .field-container span {
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--mute);
       margin-right: 8px;
+      user-select: none;
     }
 
-    .field-wrap input {
+    .field-container input {
       width: 100%;
       background: transparent;
       border: 0;
       color: var(--ink);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 14px;
+      font-size: 16px; /* iOS Safari zoom fix */
       font-weight: 500;
     }
 
-    /* Canvas Preview Area */
+    .field-container.has-error {
+      box-shadow: 0 0 0 2px var(--danger);
+    }
+
+    .error-hint {
+      font-size: 11px;
+      color: var(--danger);
+      min-height: 16px;
+      padding-left: 4px;
+      display: none;
+    }
+
+    .error-hint.visible {
+      display: block;
+    }
+
+    /* Preview Canvas Area */
     .preview-box {
       display: flex;
       flex-direction: column;
@@ -297,14 +372,14 @@
       justify-content: center;
       background: var(--soft);
       border-radius: 14px;
-      min-height: 260px;
+      min-height: 240px;
       padding: 20px;
       position: relative;
     }
 
     .checkerboard {
       width: 100%;
-      max-width: 280px;
+      max-width: 260px;
       aspect-ratio: 16/9;
       border-radius: 10px;
       background-image: 
@@ -319,7 +394,7 @@
       align-items: center;
       justify-content: center;
       box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-      transition: all 0.3s var(--ease);
+      transition: background 0.3s var(--ease);
     }
 
     [data-theme="light"] .checkerboard {
@@ -332,13 +407,14 @@
     }
 
     .checkerboard-inner {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--mute);
       font-weight: 600;
       background: var(--card);
       padding: 6px 14px;
       border-radius: 999px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      pointer-events: none;
     }
 
     .action-btn {
@@ -355,20 +431,22 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      margin-top: 20px;
+      margin-top: 16px;
       transition: opacity 0.25s, transform 0.25s var(--ease);
     }
 
-    .action-btn:hover {
+    .action-btn:hover:not(:disabled) {
       opacity: 0.92;
       transform: translateY(-2px);
     }
 
-    .action-btn:active {
-      transform: scale(0.98);
+    .action-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
     }
 
-    /* Icons & Quick Resources */
+    /* Icon Panel */
     .search-bar {
       display: flex;
       align-items: center;
@@ -384,6 +462,7 @@
       width: 18px;
       height: 18px;
       stroke: var(--mute);
+      flex-shrink: 0;
     }
 
     .search-bar input {
@@ -391,23 +470,27 @@
       border: 0;
       background: transparent;
       color: var(--ink);
-      font-size: 14px;
+      font-size: 16px; /* iOS Safari zoom fix */
     }
 
     .icons-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-      gap: 10px;
-      margin-bottom: 36px;
+      gap: 8px;
+      margin-bottom: 32px;
     }
 
     .icon-card {
       background: var(--soft);
       border-radius: 12px;
-      padding: 16px 8px 10px;
+      border: 0;
+      color: var(--ink);
+      padding: 14px 6px;
+      min-height: 84px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
       gap: 8px;
       cursor: pointer;
       transition: background 0.2s, transform 0.2s var(--ease);
@@ -416,12 +499,12 @@
 
     .icon-card:hover {
       background: var(--soft-hover);
-      transform: translateY(-3px);
+      transform: translateY(-2px);
     }
 
     .icon-card svg {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       stroke: var(--ink);
       stroke-width: 1.8;
       fill: none;
@@ -433,28 +516,29 @@
       font-size: 11px;
       color: var(--mute);
       text-align: center;
+      width: 100%;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 100%;
     }
 
     .resources-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 10px;
     }
 
     .res-card {
       background: var(--soft);
-      padding: 16px;
+      padding: 14px 16px;
       border-radius: 12px;
       text-decoration: none;
       color: inherit;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: background 0.25s, transform 0.25s var(--ease);
+      min-height: 48px;
+      transition: background 0.2s, transform 0.2s var(--ease);
     }
 
     .res-card:hover {
@@ -462,32 +546,33 @@
       transform: translateY(-2px);
     }
 
-    .res-card h4 {
-      font-size: 14px;
+    .res-card h2 {
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .res-card p {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--mute);
     }
 
-    /* Color & Shadow Mini Tools */
+    /* Color Panel */
     .color-picker-wrap {
       display: flex;
       gap: 16px;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .color-swatch {
-      width: 56px;
-      height: 56px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
       border: 0;
       cursor: pointer;
       background: none;
+      flex-shrink: 0;
     }
 
     .color-swatch::-webkit-color-swatch-wrapper {
@@ -500,23 +585,25 @@
 
     .code-box {
       background: var(--soft);
-      padding: 14px 18px;
+      padding: 10px 14px;
       border-radius: 12px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 13px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+      min-height: 48px;
     }
 
     .code-copy-btn {
       border: 0;
       background: var(--card);
       color: var(--ink);
-      padding: 6px 12px;
-      font-size: 11px;
-      border-radius: 6px;
+      min-height: 34px;
+      padding: 0 14px;
+      font-size: 12px;
+      border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
       transition: background 0.2s;
@@ -527,22 +614,25 @@
       color: var(--acc-ink);
     }
 
-    /* Toast */
+    /* Toast Accessible Notification */
     .toast {
       position: fixed;
       bottom: 24px;
       left: 50%;
-      transform: translateX(-50%) translateY(30px);
+      transform: translateX(-50%) translateY(40px);
       background: var(--ink);
       color: var(--bg);
-      padding: 10px 22px;
+      padding: 12px 24px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 600;
       opacity: 0;
       pointer-events: none;
       transition: transform 0.35s var(--ease), opacity 0.35s;
-      z-index: 100;
+      z-index: 1000;
+      max-width: 90vw;
+      text-align: center;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
     }
 
     .toast.show {
@@ -550,378 +640,595 @@
       opacity: 1;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    /* Animasyonlar & Reduced Motion */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo">
+    <a href="#" class="logo" aria-label="IDW Studio Ana Sayfa">
       <span>i</span><span>d</span><span>w</span>
-      <span style="font-weight:400; color:var(--mute); margin-left:8px; font-size:16px;">studio</span>
-    </div>
-    <div class="nav-actions">
-      <button class="btn-circle" id="themeToggle" title="Tema Değiştir">
-        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
-      </button>
-    </div>
+      <span style="font-weight:400; color:var(--mute); margin-left:6px; font-size:15px;">tools</span>
+    </a>
+    <button class="btn-circle" id="themeToggleBtn" type="button" aria-label="Temayı Açık/Koyu Değiştir" aria-live="polite">
+      <svg id="themeIcon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+    </button>
   </header>
 
   <main>
     <div class="hero">
       <h1>Hafif ve Sade Tasarım Araçları</h1>
-      <p>Karmaşık paneller olmadan, tasarımcıların her gün ihtiyaç duyduğu araçlar.</p>
+      <p>Özel çözünürlüklü şeffaf PNG üretici, arama özellikli ikonlar ve CSS araçları.</p>
     </div>
 
-    <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('canvas')">Boş PNG Üretici</button>
-      <button class="tab-btn" onclick="switchTab('icons')">İkonlar & Kütüphaneler</button>
-      <button class="tab-btn" onclick="switchTab('colors')">Renk & CSS</button>
+    <div class="tabs-wrapper">
+      <div class="tabs" role="tablist" aria-label="Tasarım Araçları Sekmeleri">
+        <button class="tab-btn" role="tab" id="tab-canvas" aria-selected="true" aria-controls="panel-canvas" tabindex="0">Boş PNG Üretici</button>
+        <button class="tab-btn" role="tab" id="tab-icons" aria-selected="false" aria-controls="panel-icons" tabindex="-1">İkonlar &amp; Kaynaklar</button>
+        <button class="tab-btn" role="tab" id="tab-colors" aria-selected="false" aria-controls="panel-colors" tabindex="-1">Renk &amp; CSS</button>
+      </div>
     </div>
 
-    <!-- 1. PANEL: ŞEFFAF / BOŞ PNG ÜRETİCİ -->
-    <div id="canvas-panel" class="panel active">
+    <!-- 1. PANEL: ŞEFFAF VE BOŞ PNG ÜRETİCİ -->
+    <section id="panel-canvas" class="panel" role="tabpanel" aria-labelledby="tab-canvas" tabindex="0">
       <div class="grid-2">
         <div>
-          <div class="form-group">
-            <span class="label">Ön Tanımlı Oranlar</span>
-            <div class="chips">
-              <button class="chip active" onclick="setPreset(1920, 1080, this)">16:9 (FHD)</button>
-              <button class="chip" onclick="setPreset(1080, 1920, this)">9:16 (Story)</button>
-              <button class="chip" onclick="setPreset(1080, 1080, this)">1:1 (Kare)</button>
-              <button class="chip" onclick="setPreset(1200, 630, this)">OG Graph</button>
-              <button class="chip" onclick="setPreset(1600, 1200, this)">4:3 Shot</button>
-              <button class="chip" onclick="setPreset(512, 512, this)">İkon 512</button>
+          <fieldset class="form-group" style="border:0; padding:0; margin:0 0 22px 0;">
+            <legend class="label">Ön Tanımlı Oranlar</legend>
+            <div class="chips" role="radiogroup" aria-label="Görsel Boyut Seçenekleri" id="presetChips">
+              <button type="button" role="radio" aria-checked="true" class="chip" data-w="1920" data-h="1080">16:9 (FHD)</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-w="1080" data-h="1920">9:16 (Story)</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-w="1080" data-h="1080">1:1 (Kare)</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-w="1200" data-h="630">OG Graph</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-w="1600" data-h="1200">4:3 Shot</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-w="512" data-h="512">İkon 512</button>
             </div>
-          </div>
+          </fieldset>
 
           <div class="form-group">
-            <span class="label">Özel Çözünürlük (PX)</span>
+            <span class="label">Özel Çözünürlük (1 - 8192 px)</span>
             <div class="input-row">
               <div class="field-wrap">
-                <span>G</span>
-                <input type="number" id="wInput" value="1920" oninput="updateDims()">
+                <label for="widthInput" class="sr-only">Genişlik</label>
+                <div class="field-container" id="widthWrap">
+                  <span aria-hidden="true">G</span>
+                  <input type="number" id="widthInput" value="1920" min="1" max="8192" step="1" inputmode="numeric" aria-describedby="widthError">
+                </div>
+                <div id="widthError" class="error-hint" role="alert">Geçersiz piksel (1-8192)</div>
               </div>
               <div class="field-wrap">
-                <span>Y</span>
-                <input type="number" id="hInput" value="1080" oninput="updateDims()">
+                <label for="heightInput" class="sr-only">Yükseklik</label>
+                <div class="field-container" id="heightWrap">
+                  <span aria-hidden="true">Y</span>
+                  <input type="number" id="heightInput" value="1080" min="1" max="8192" step="1" inputmode="numeric" aria-describedby="heightError">
+                </div>
+                <div id="heightError" class="error-hint" role="alert">Geçersiz piksel (1-8192)</div>
               </div>
             </div>
           </div>
 
-          <div class="form-group">
-            <span class="label">Dolgu Tipi</span>
-            <div class="chips">
-              <button class="chip active" id="type-trans" onclick="setFill('trans', this)">Şeffaf (Alpha)</button>
-              <button class="chip" id="type-white" onclick="setFill('white', this)">Beyaz</button>
-              <button class="chip" id="type-black" onclick="setFill('black', this)">Siyah</button>
-              <button class="chip" id="type-custom" onclick="setFill('custom', this)">Özel Renk</button>
+          <fieldset class="form-group" style="border:0; padding:0; margin:0 0 22px 0;">
+            <legend class="label">Arka Plan Dolgusu</legend>
+            <div class="chips" role="radiogroup" aria-label="Arka Plan Tipi" id="fillChips">
+              <button type="button" role="radio" aria-checked="true" class="chip" data-fill="trans">Şeffaf (Alpha)</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-fill="white">Beyaz</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-fill="black">Siyah</button>
+              <button type="button" role="radio" aria-checked="false" class="chip" data-fill="custom">Özel Renk</button>
             </div>
-          </div>
+          </fieldset>
 
           <div class="form-group" id="customColorWrap" style="display:none;">
-            <span class="label">Arka Plan Rengi</span>
-            <input type="color" id="bgPicker" value="#8e99cc" oninput="renderPreview()" style="width:100%; height:40px; border-radius:10px; border:0; cursor:pointer;">
+            <label for="bgPicker" class="label">Özel Arka Plan Rengi</label>
+            <input type="color" id="bgPicker" value="#8e99cc" class="color-swatch" style="width:100%; height:44px; border-radius:12px;">
           </div>
         </div>
 
         <div>
-          <span class="label">Önizleme & İndir</span>
+          <span class="label">Önizleme &amp; Çıktı</span>
           <div class="preview-box">
-            <div class="checkerboard" id="previewArea">
+            <div class="checkerboard" id="canvasPreview" aria-hidden="true">
               <span class="checkerboard-inner" id="previewMeta">1920 × 1080</span>
             </div>
           </div>
 
-          <button class="action-btn" onclick="downloadImage()">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <button type="button" class="action-btn" id="downloadBtn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             PNG Dosyasını İndir
           </button>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 2. PANEL: İKONLAR & HIZLI KAYNAKLAR -->
-    <div id="icons-panel" class="panel">
-      <div class="search-bar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="iconSearch" placeholder="Lucide & sistem ikonlarında ara (örn: heart, user, star)..." oninput="filterIcons()">
+    <section id="panel-icons" class="panel" role="tabpanel" aria-labelledby="tab-icons" tabindex="0" hidden>
+      <div class="search-bar" role="search">
+        <label for="iconSearch" class="sr-only">İkonlarda ara</label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="iconSearch" placeholder="İkon filtrele (örn: heart, user, star, download)...">
       </div>
 
-      <span class="label">Tıkla ve SVG Kodunu Kopyala</span>
-      <div class="icons-grid" id="iconsGrid">
-        <!-- Dinamik İkonlar JS ile eklenecek -->
+      <span class="label" id="iconsGridLabel">Tıkla ve SVG Kodunu Kopyala</span>
+      <div class="icons-grid" id="iconsGrid" aria-labelledby="iconsGridLabel">
+        <!-- JS ile dinamik render edilecek -->
       </div>
 
-      <span class="label" style="margin-top: 24px;">Tasarımcı Kitaplıkları & Araçlar</span>
+      <span class="label" style="margin-top:28px;">Açık Kaynak Tasarımcı Kitaplıkları</span>
       <div class="resources-grid">
-        <a href="https://lucide.dev/icons" target="_blank" class="res-card">
+        <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer" class="res-card">
           <div>
-            <h4>Lucide Icons</h4>
+            <h2>Lucide Icons</h2>
             <p>Hafif, temiz açık kaynaklı ikon seti</p>
           </div>
-          <span>↗</span>
+          <span aria-hidden="true">↗</span>
         </a>
-        <a href="https://devicon.dev" target="_blank" class="res-card">
+        <a href="https://devicon.dev" target="_blank" rel="noopener noreferrer" class="res-card">
           <div>
-            <h4>Devicon</h4>
+            <h2>Devicon</h2>
             <p>Yazılım dilleri ve teknoloji logoları</p>
           </div>
-          <span>↗</span>
+          <span aria-hidden="true">↗</span>
         </a>
-        <a href="https://svgrepo.com" target="_blank" class="res-card">
+        <a href="https://svgrepo.com" target="_blank" rel="noopener noreferrer" class="res-card">
           <div>
-            <h4>SVG Repo</h4>
-            <p>500.000+ serbest vektör & ikon</p>
+            <h2>SVG Repo</h2>
+            <p>500.000+ serbest vektör ve ikon</p>
           </div>
-          <span>↗</span>
+          <span aria-hidden="true">↗</span>
         </a>
-        <a href="https://coolors.co" target="_blank" class="res-card">
+        <a href="https://coolors.co" target="_blank" rel="noopener noreferrer" class="res-card">
           <div>
-            <h4>Coolors</h4>
+            <h2>Coolors</h2>
             <p>Süper hızlı renk paleti üreticisi</p>
           </div>
-          <span>↗</span>
-        </a>
-        <a href="https://tabler.io/icons" target="_blank" class="res-card">
-          <div>
-            <h4>Tabler Icons</h4>
-            <p>5200+ minimal web simgesi</p>
-          </div>
-          <span>↗</span>
-        </a>
-        <a href="https://unsplash.com" target="_blank" class="res-card">
-          <div>
-            <h4>Unsplash</h4>
-            <p>Yüksek çözünürlüklü ücretsiz stok görseller</p>
-          </div>
-          <span>↗</span>
+          <span aria-hidden="true">↗</span>
         </a>
       </div>
-    </div>
+    </section>
 
-    <!-- 3. PANEL: RENK & CSS HIZLI ÇEVİRİCİ -->
-    <div id="colors-panel" class="panel">
+    <!-- 3. PANEL: RENK & CSS ARAÇLARI -->
+    <section id="panel-colors" class="panel" role="tabpanel" aria-labelledby="tab-colors" tabindex="0" hidden>
       <div class="form-group">
-        <span class="label">Renk Seç & Kodları Al</span>
+        <label for="colorPickerInput" class="label">Canlı Renk Seçimi</label>
         <div class="color-picker-wrap">
-          <input type="color" id="quickColor" value="#5e6ad2" class="color-swatch" oninput="convertColor()">
+          <input type="color" id="colorPickerInput" value="#5e6ad2" class="color-swatch">
           <div>
-            <h3 id="colorHexText" style="font-size:20px; font-weight:700; font-family:'JetBrains Mono';">#5e6ad2</h3>
-            <p style="color:var(--mute); font-size:13px;">Canlı CSS renk çıktıları</p>
+            <div id="colorHexText" style="font-size:20px; font-weight:700; font-family:'JetBrains Mono', monospace;">#5e6ad2</div>
+            <p style="color:var(--mute); font-size:12px; margin-top:2px;">Format dönüştürücü</p>
           </div>
         </div>
       </div>
 
       <div class="code-box">
-        <span id="rgbVal">rgb(94, 106, 210)</span>
-        <button class="code-copy-btn" onclick="copyCode('rgbVal')">Kopyala</button>
-      </div>
-      <div class="code-box">
-        <span id="hslVal">hsl(234, 58%, 60%)</span>
-        <button class="code-copy-btn" onclick="copyCode('hslVal')">Kopyala</button>
+        <span id="rgbValueText">rgb(94, 106, 210)</span>
+        <button type="button" class="code-copy-btn" data-copy-target="rgbValueText">RGB Kopyala</button>
       </div>
 
-      <div class="form-group" style="margin-top: 36px;">
-        <span class="label">Doğal CSS Yumuşak Gölge (Smooth Box-Shadow)</span>
+      <div class="code-box">
+        <span id="hslValueText">hsl(234, 58%, 60%)</span>
+        <button type="button" class="code-copy-btn" data-copy-target="hslValueText">HSL Kopyala</button>
+      </div>
+
+      <div class="form-group" style="margin-top:28px;">
+        <span class="label">Doğal Mikro Gölge (Soft Shadow)</span>
         <div class="code-box">
-          <span id="shadowVal">box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);</span>
-          <button class="code-copy-btn" onclick="copyCode('shadowVal')">Kopyala</button>
+          <span id="shadowValueText">box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);</span>
+          <button type="button" class="code-copy-btn" data-copy-target="shadowValueText">CSS Kopyala</button>
         </div>
       </div>
-    </div>
+    </section>
   </main>
 
-  <div class="toast" id="toast">SVG Panoya Kopyalandı!</div>
-
-  <canvas id="hiddenCanvas" style="display:none;"></canvas>
+  <div class="toast" id="toastNotification" role="status" aria-live="polite"></div>
+  <canvas id="offscreenCanvas" style="display:none;"></canvas>
 
   <script>
-    // Tab Yönetimi
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-      
-      event.target.classList.add('active');
-      document.getElementById(tabId + '-panel').classList.add('active');
-    }
+    (function () {
+      'use strict';
 
-    // Tema Değiştirme
-    const themeBtn = document.getElementById('themeToggle');
-    themeBtn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      renderPreview();
-    });
-
-    // --- 1. BOŞ VE ÖZEL BOYUTLU PNG MOTORU ---
-    let currentFill = 'trans';
-
-    function setPreset(w, h, btn) {
-      document.querySelectorAll('.chips .chip').forEach(c => {
-        if(c.parentNode === btn.parentNode) c.classList.remove('active');
-      });
-      btn.classList.add('active');
-      document.getElementById('wInput').value = w;
-      document.getElementById('hInput').value = h;
-      updateDims();
-    }
-
-    function setFill(type, btn) {
-      currentFill = type;
-      document.querySelectorAll('#type-trans, #type-white, #type-black, #type-custom').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('customColorWrap').style.display = type === 'custom' ? 'block' : 'none';
-      renderPreview();
-    }
-
-    function updateDims() {
-      const w = parseInt(document.getElementById('wInput').value) || 100;
-      const h = parseInt(document.getElementById('hInput').value) || 100;
-      document.getElementById('previewMeta').textContent = `${w} × ${h}`;
-      renderPreview();
-    }
-
-    function renderPreview() {
-      const prev = document.getElementById('previewArea');
-      const customCol = document.getElementById('bgPicker').value;
-
-      if (currentFill === 'trans') {
-        prev.style.background = '';
-      } else if (currentFill === 'white') {
-        prev.style.background = '#ffffff';
-      } else if (currentFill === 'black') {
-        prev.style.background = '#050507';
-      } else if (currentFill === 'custom') {
-        prev.style.background = customCol;
-      }
-    }
-
-    function downloadImage() {
-      const w = parseInt(document.getElementById('wInput').value) || 1920;
-      const h = parseInt(document.getElementById('hInput').value) || 1080;
-      const canvas = document.getElementById('hiddenCanvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-
-      ctx.clearRect(0, 0, w, h);
-
-      if (currentFill === 'white') {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, w, h);
-      } else if (currentFill === 'black') {
-        ctx.fillStyle = '#000000';
-        ctx.fillRect(0, 0, w, h);
-      } else if (currentFill === 'custom') {
-        ctx.fillStyle = document.getElementById('bgPicker').value;
-        ctx.fillRect(0, 0, w, h);
-      }
-
-      canvas.toBlob((blob) => {
-        const link = document.createElement('a');
-        link.download = `canvas-${w}x${h}-${currentFill}.png`;
-        link.href = URL.createObjectURL(blob);
-        link.click();
-        URL.revokeObjectURL(link.href);
-        showToast('PNG Görseli İndirildi');
-      }, 'image/png');
-    }
-
-    // --- 2. ENTEGRE LUCIDE VE SVG SETİ ---
-    const iconData = [
-      { name: 'heart', svg: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>' },
-      { name: 'star', svg: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
-      { name: 'user', svg: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
-      { name: 'download', svg: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>' },
-      { name: 'image', svg: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>' },
-      { name: 'code', svg: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' },
-      { name: 'palette', svg: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>' },
-      { name: 'layers', svg: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>' },
-      { name: 'copy', svg: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>' },
-      { name: 'check', svg: '<polyline points="20 6 9 17 4 12"/>' },
-      { name: 'sparkles', svg: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>' },
-      { name: 'box', svg: '<path d="21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>' }
-    ];
-
-    function renderIcons(list) {
-      const grid = document.getElementById('iconsGrid');
-      grid.innerHTML = '';
-      list.forEach(i => {
-        const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${i.svg}</svg>`;
-        const div = document.createElement('div');
-        div.className = 'icon-card';
-        div.innerHTML = `${fullSvg}<span>${i.name}</span>`;
-        div.onclick = () => {
-          navigator.clipboard.writeText(fullSvg);
-          showToast(`"${i.name}" SVG Panoya Kopyalandı!`);
-        };
-        grid.appendChild(div);
-      });
-    }
-
-    function filterIcons() {
-      const q = document.getElementById('iconSearch').value.toLowerCase();
-      renderIcons(iconData.filter(i => i.name.includes(q)));
-    }
-
-    // --- 3. RENK & CSS ÇEVİRİCİ ---
-    function convertColor() {
-      const hex = document.getElementById('quickColor').value;
-      document.getElementById('colorHexText').textContent = hex;
-      
-      // HEX to RGB
-      const r = parseInt(hex.slice(1, 3), 16);
-      const g = parseInt(hex.slice(3, 5), 16);
-      const b = parseInt(hex.slice(5, 7), 16);
-      document.getElementById('rgbVal').textContent = `rgb(${r}, ${g}, ${b})`;
-
-      // RGB to HSL
-      const rNorm = r / 255, gNorm = g / 255, bNorm = b / 255;
-      const max = Math.max(rNorm, gNorm, bNorm), min = Math.min(rNorm, gNorm, bNorm);
-      let h, s, l = (max + min) / 2;
-
-      if (max === min) {
-        h = s = 0;
-      } else {
-        const d = max - min;
-        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-        switch (max) {
-          case rNorm: h = (gNorm - bNorm) / d + (gNorm < bNorm ? 6 : 0); break;
-          case gNorm: h = (bNorm - rNorm) / d + 2; break;
-          case bNorm: h = (rNorm - gNorm) / d + 4; break;
+      /* --- 1. Güvenli Clipboard ve Fallback Sistemi --- */
+      async function copyText(text) {
+        if (!text) return false;
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (err) {
+            // İzin verilmemesi veya context hatasında fallback'e geç
+          }
         }
-        h /= 6;
+        // Geriye dönük uyumluluk textarea fallback
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '-9999px';
+        textArea.style.left = '-9999px';
+        textArea.setAttribute('readonly', '');
+        document.body.appendChild(textArea);
+        textArea.select();
+        let success = false;
+        try {
+          success = document.execCommand('copy');
+        } catch (e) {
+          success = false;
+        }
+        document.body.removeChild(textArea);
+        return success;
       }
-      document.getElementById('hslVal').textContent = `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
-    }
 
-    function copyCode(id) {
-      const text = document.getElementById(id).textContent;
-      navigator.clipboard.writeText(text);
-      showToast('Kopyalandı: ' + text);
-    }
+      /* --- 2. Toast Bildirimi --- */
+      const Toast = {
+        elem: document.getElementById('toastNotification'),
+        timer: null,
+        show(msg) {
+          if (!this.elem) return;
+          this.elem.textContent = msg;
+          this.elem.classList.add('show');
+          clearTimeout(this.timer);
+          this.timer = setTimeout(() => {
+            this.elem.classList.remove('show');
+          }, 2400);
+        }
+      };
 
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2200);
-    }
+      /* --- 3. Tema Yönetimi ve Kalıcılık --- */
+      const Theme = {
+        btn: document.getElementById('themeToggleBtn'),
+        icon: document.getElementById('themeIcon'),
+        sunPath: 'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
+        moonPath: 'M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
+        
+        init() {
+          const current = document.documentElement.getAttribute('data-theme') || 'dark';
+          this.updateUI(current);
 
-    // İlk Çalıştırma
-    renderIcons(iconData);
-    convertColor();
-    renderPreview();
+          this.btn.addEventListener('click', () => {
+            const now = document.documentElement.getAttribute('data-theme');
+            const next = now === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('idw_theme', next);
+            this.updateUI(next);
+            Toast.show(next === 'dark' ? 'Koyu tema aktif' : 'Açık tema aktif');
+          });
+
+          // Sistem tema değişikliklerini dinleme (kullanıcı tercih kaydetmediyse)
+          window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('idw_theme')) {
+              const theme = e.matches ? 'dark' : 'light';
+              document.documentElement.setAttribute('data-theme', theme);
+              this.updateUI(theme);
+            }
+          });
+        },
+
+        updateUI(theme) {
+          if (this.icon) {
+            this.icon.innerHTML = `<path d="${theme === 'dark' ? this.moonPath : this.sunPath}"/>`;
+          }
+          this.btn.setAttribute('aria-label', `Geçerli tema: ${theme}. Değiştirmek için tıkla.`);
+        }
+      };
+
+      /* --- 4. Erişilebilir Sekme (WAI-ARIA Tabs) --- */
+      const Tabs = {
+        tabs: Array.from(document.querySelectorAll('.tabs [role="tab"]')),
+        panels: Array.from(document.querySelectorAll('main [role="tabpanel"]')),
+
+        init() {
+          this.tabs.forEach((tab) => {
+            tab.addEventListener('click', () => this.activateTab(tab));
+            tab.addEventListener('keydown', (e) => this.handleKeydown(e));
+          });
+        },
+
+        activateTab(selectedTab) {
+          this.tabs.forEach((t) => {
+            const isSelected = t === selectedTab;
+            t.setAttribute('aria-selected', isSelected ? 'true' : 'false');
+            t.setAttribute('tabindex', isSelected ? '0' : '-1');
+          });
+
+          const targetPanelId = selectedTab.getAttribute('aria-controls');
+          this.panels.forEach((p) => {
+            if (p.id === targetPanelId) {
+              p.removeAttribute('hidden');
+            } else {
+              p.setAttribute('hidden', '');
+            }
+          });
+        },
+
+        handleKeydown(e) {
+          const index = this.tabs.indexOf(e.currentTarget);
+          let targetIndex = null;
+
+          if (e.key === 'ArrowRight') {
+            targetIndex = (index + 1) % this.tabs.length;
+          } else if (e.key === 'ArrowLeft') {
+            targetIndex = (index - 1 + this.tabs.length) % this.tabs.length;
+          } else if (e.key === 'Home') {
+            targetIndex = 0;
+          } else if (e.key === 'End') {
+            targetIndex = this.tabs.length - 1;
+          }
+
+          if (targetIndex !== null) {
+            e.preventDefault();
+            this.tabs[targetIndex].focus();
+            this.activateTab(this.tabs[targetIndex]);
+          }
+        }
+      };
+
+      /* --- 5. PNG Canvas Oluşturucu & Doğrulama --- */
+      const CanvasGenerator = {
+        wInput: document.getElementById('widthInput'),
+        hInput: document.getElementById('heightInput'),
+        wWrap: document.getElementById('widthWrap'),
+        hWrap: document.getElementById('heightWrap'),
+        wErr: document.getElementById('widthError'),
+        hErr: document.getElementById('heightError'),
+        dlBtn: document.getElementById('downloadBtn'),
+        presetChips: document.getElementById('presetChips'),
+        fillChips: document.getElementById('fillChips'),
+        customColorWrap: document.getElementById('customColorWrap'),
+        bgPicker: document.getElementById('bgPicker'),
+        preview: document.getElementById('canvasPreview'),
+        previewMeta: document.getElementById('previewMeta'),
+        canvas: document.getElementById('offscreenCanvas'),
+        currentFill: 'trans',
+
+        init() {
+          // Input dinleyicileri
+          this.wInput.addEventListener('input', () => this.handleDimensionsChange());
+          this.hInput.addEventListener('input', () => this.handleDimensionsChange());
+          this.bgPicker.addEventListener('input', () => this.updatePreview());
+
+          // Preset Chips dinleyici
+          this.presetChips.addEventListener('click', (e) => {
+            const chip = e.target.closest('[role="radio"]');
+            if (!chip) return;
+            this.presetChips.querySelectorAll('[role="radio"]').forEach(c => c.setAttribute('aria-checked', 'false'));
+            chip.setAttribute('aria-checked', 'true');
+            this.wInput.value = chip.dataset.w;
+            this.hInput.value = chip.dataset.h;
+            this.handleDimensionsChange();
+          });
+
+          // Fill Chips dinleyici
+          this.fillChips.addEventListener('click', (e) => {
+            const chip = e.target.closest('[role="radio"]');
+            if (!chip) return;
+            this.fillChips.querySelectorAll('[role="radio"]').forEach(c => c.setAttribute('aria-checked', 'false'));
+            chip.setAttribute('aria-checked', 'true');
+            this.currentFill = chip.dataset.fill;
+            this.customColorWrap.style.display = this.currentFill === 'custom' ? 'block' : 'none';
+            this.updatePreview();
+          });
+
+          // İndirme butonu
+          this.dlBtn.addEventListener('click', () => this.download());
+
+          this.handleDimensionsChange();
+        },
+
+        validateDimension(val) {
+          const num = parseInt(val, 10);
+          return !isNaN(num) && num >= 1 && num <= 8192;
+        },
+
+        handleDimensionsChange() {
+          const wValid = this.validateDimension(this.wInput.value);
+          const hValid = this.validateDimension(this.hInput.value);
+
+          this.wWrap.classList.toggle('has-error', !wValid);
+          this.wErr.classList.toggle('visible', !wValid);
+          this.wInput.setAttribute('aria-invalid', !wValid ? 'true' : 'false');
+
+          this.hWrap.classList.toggle('has-error', !hValid);
+          this.hErr.classList.toggle('visible', !hValid);
+          this.hInput.setAttribute('aria-invalid', !hValid ? 'true' : 'false');
+
+          const isValid = wValid && hValid;
+          this.dlBtn.disabled = !isValid;
+
+          if (isValid) {
+            const w = parseInt(this.wInput.value, 10);
+            const h = parseInt(this.hInput.value, 10);
+            this.previewMeta.textContent = `${w} × ${h}`;
+            this.updatePreview();
+          } else {
+            this.previewMeta.textContent = 'Geçersiz Ölçü';
+          }
+        },
+
+        updatePreview() {
+          if (this.currentFill === 'trans') {
+            this.preview.style.background = '';
+          } else if (this.currentFill === 'white') {
+            this.preview.style.background = '#ffffff';
+          } else if (this.currentFill === 'black') {
+            this.preview.style.background = '#0a0a0c';
+          } else if (this.currentFill === 'custom') {
+            this.preview.style.background = this.bgPicker.value;
+          }
+        },
+
+        download() {
+          const w = parseInt(this.wInput.value, 10);
+          const h = parseInt(this.hInput.value, 10);
+
+          if (!this.validateDimension(w) || !this.validateDimension(h)) {
+            Toast.show('Hata: Piksel değerleri 1 ile 8192 arasında olmalıdır.');
+            return;
+          }
+
+          this.canvas.width = w;
+          this.canvas.height = h;
+          const ctx = this.canvas.getContext('2d');
+          ctx.clearRect(0, 0, w, h);
+
+          if (this.currentFill === 'white') {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, w, h);
+          } else if (this.currentFill === 'black') {
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, w, h);
+          } else if (this.currentFill === 'custom') {
+            ctx.fillStyle = this.bgPicker.value;
+            ctx.fillRect(0, 0, w, h);
+          }
+
+          this.canvas.toBlob((blob) => {
+            if (!blob) {
+              Toast.show('Canvas oluşturulamadı');
+              return;
+            }
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.download = `idw-canvas-${w}x${h}-${this.currentFill}.png`;
+            a.href = url;
+            a.click();
+            URL.revokeObjectURL(url);
+            Toast.show('PNG başarıyla indirildi');
+          }, 'image/png');
+        }
+      };
+
+      /* --- 6. İkon Seti & Arama --- */
+      const IconLibrary = {
+        grid: document.getElementById('iconsGrid'),
+        search: document.getElementById('iconSearch'),
+        data: [
+          { name: 'heart', svg: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>' },
+          { name: 'star', svg: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>' },
+          { name: 'user', svg: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>' },
+          { name: 'download', svg: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>' },
+          { name: 'image', svg: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>' },
+          { name: 'code', svg: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' },
+          { name: 'palette', svg: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>' },
+          { name: 'layers', svg: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>' },
+          { name: 'copy', svg: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>' },
+          { name: 'check', svg: '<polyline points="20 6 9 17 4 12"/>' },
+          { name: 'sparkles', svg: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>' },
+          { name: 'box', svg: '<path d="21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>' }
+        ],
+
+        init() {
+          this.render(this.data);
+          this.search.addEventListener('input', (e) => {
+            const query = e.target.value.trim().toLowerCase();
+            const filtered = this.data.filter(item => item.name.includes(query));
+            this.render(filtered);
+          });
+        },
+
+        render(items) {
+          this.grid.innerHTML = '';
+          if (items.length === 0) {
+            this.grid.innerHTML = '<p style="grid-column: 1/-1; color: var(--mute); font-size: 13px; text-align: center; padding: 20px 0;">Eşleşen ikon bulunamadı.</p>';
+            return;
+          }
+
+          items.forEach(item => {
+            const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${item.svg}</svg>`;
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'icon-card';
+            btn.setAttribute('aria-label', `${item.name} SVG kopyala`);
+            btn.innerHTML = `${fullSvg}<span>${item.name}</span>`;
+
+            btn.addEventListener('click', async () => {
+              const copied = await copyText(fullSvg);
+              if (copied) {
+                Toast.show(`"${item.name}" SVG panoya kopyalandı`);
+              } else {
+                Toast.show('Kopyalama başarısız oldu');
+              }
+            });
+
+            this.grid.appendChild(btn);
+          });
+        }
+      };
+
+      /* --- 7. Renk & CSS Çevirici --- */
+      const ColorTool = {
+        picker: document.getElementById('colorPickerInput'),
+        hexText: document.getElementById('colorHexText'),
+        rgbText: document.getElementById('rgbValueText'),
+        hslText: document.getElementById('hslValueText'),
+
+        init() {
+          this.picker.addEventListener('input', () => this.update());
+          
+          // data-copy-target kullanan butonlar
+          document.querySelectorAll('[data-copy-target]').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              const targetId = btn.getAttribute('data-copy-target');
+              const targetElem = document.getElementById(targetId);
+              if (targetElem) {
+                const text = targetElem.textContent.trim();
+                const ok = await copyText(text);
+                if (ok) Toast.show(`Kopyalandı: ${text}`);
+              }
+            });
+          });
+
+          this.update();
+        },
+
+        update() {
+          const hex = this.picker.value;
+          this.hexText.textContent = hex;
+
+          // Hex -> RGB
+          const r = parseInt(hex.slice(1, 3), 16);
+          const g = parseInt(hex.slice(3, 5), 16);
+          const b = parseInt(hex.slice(5, 7), 16);
+          this.rgbText.textContent = `rgb(${r}, ${g}, ${b})`;
+
+          // RGB -> HSL
+          const rN = r / 255, gN = g / 255, bN = b / 255;
+          const max = Math.max(rN, gN, bN), min = Math.min(rN, gN, bN);
+          let h, s, l = (max + min) / 2;
+
+          if (max === min) {
+            h = s = 0;
+          } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case rN: h = (gN - bN) / d + (gN < bN ? 6 : 0); break;
+              case gN: h = (bN - rN) / d + 2; break;
+              case bN: h = (rN - gN) / d + 4; break;
+            }
+            h /= 6;
+          }
+          this.hslText.textContent = `hsl(${Math.round(h * 360)}, ${Math.round(s * 100)}%, ${Math.round(l * 100)}%)`;
+        }
+      };
+
+      /* Uygulamayı Başlat */
+      document.addEventListener('DOMContentLoaded', () => {
+        Theme.init();
+        Tabs.init();
+        CanvasGenerator.init();
+        IconLibrary.init();
+        ColorTool.init();
+      });
+    })();
   </script>
 </body>
 </html>
