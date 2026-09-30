@@ -9,13 +9,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   
   <script>
-    // FOUC önleyici: Tercih edilen veya kaydedilmiş temayı sayfa yüklenmeden uygular
+    // FOUC Önleyici: Tema durumunu DOM çizilmeden uygular
     (function() {
       try {
-        const savedTheme = localStorage.getItem('idw_theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
-        document.documentElement.setAttribute('data-theme', theme);
+        const saved = localStorage.getItem('idw_theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', saved || (prefersDark ? 'dark' : 'light'));
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'dark');
       }
@@ -35,6 +34,7 @@
       --acc-soft: rgba(142, 153, 204, 0.12);
       --acc-ink: #0d0f17;
       --danger: #e06c75;
+      --success: #6fae93;
       --ease: cubic-bezier(0.16, 1, 0.3, 1);
       --radius: 14px;
     }
@@ -51,6 +51,7 @@
       --acc-soft: rgba(94, 106, 210, 0.1);
       --acc-ink: #ffffff;
       --danger: #d94545;
+      --success: #3b9c72;
     }
 
     * {
@@ -70,6 +71,7 @@
       flex-direction: column;
       transition: background-color 0.3s var(--ease), color 0.3s;
       overflow-x: hidden;
+      padding-top: 24px;
     }
 
     :focus-visible {
@@ -89,12 +91,103 @@
       border: 0;
     }
 
-    /* Header & IDW Logo */
+    /* ---- iPhone Üst Çubuk / Dynamic Island Hızlı Erişim ---- */
+    .ios-island-anchor {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 6px;
+    }
+
+    .ios-indicator-bar {
+      width: 110px;
+      height: 5px;
+      background: var(--mute);
+      opacity: 0.4;
+      border-radius: 999px;
+      transition: all 0.35s var(--ease);
+      cursor: pointer;
+    }
+
+    .ios-dock {
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card);
+      padding: 0 10px;
+      border-radius: 999px;
+      height: 0;
+      opacity: 0;
+      transform: translateY(-12px) scale(0.92);
+      pointer-events: none;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+      transition: height 0.4s var(--ease), opacity 0.3s var(--ease), transform 0.4s var(--ease), padding 0.3s;
+    }
+
+    /* Hover & Keyboard Focus ile Açılma */
+    .ios-island-anchor:hover .ios-indicator-bar,
+    .ios-island-anchor:focus-within .ios-indicator-bar {
+      opacity: 0.1;
+      transform: scaleX(0.7);
+    }
+
+    .ios-island-anchor:hover .ios-dock,
+    .ios-island-anchor:focus-within .ios-dock {
+      height: 48px;
+      padding: 0 12px;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .dock-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--soft);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: background 0.2s, transform 0.2s var(--ease);
+    }
+
+    .dock-btn:hover {
+      background: var(--soft-hover);
+      transform: translateY(-2px);
+    }
+
+    .dock-btn svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 20px;
+      background: var(--line);
+      margin: 0 2px;
+    }
+
+    /* Header */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 20px 24px;
+      padding: 16px 24px;
       max-width: 1000px;
       margin: 0 auto;
       width: 100%;
@@ -148,10 +241,6 @@
       transform: scale(1.05);
     }
 
-    .btn-circle:active {
-      transform: scale(0.96);
-    }
-
     .btn-circle svg {
       width: 18px;
       height: 18px;
@@ -163,27 +252,27 @@
     /* Main Container */
     main {
       flex: 1;
-      max-width: 900px;
+      max-width: 980px;
       width: 100%;
       margin: 0 auto;
-      padding: 12px 20px 60px;
+      padding: 8px 20px 60px;
     }
 
     .hero {
       text-align: center;
-      margin-bottom: 30px;
+      margin-bottom: 26px;
     }
 
     .hero h1 {
-      font-size: clamp(24px, 5vw, 32px);
+      font-size: clamp(22px, 4.5vw, 30px);
       font-weight: 700;
       letter-spacing: -0.03em;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .hero p {
       color: var(--mute);
-      font-size: clamp(13px, 3.5vw, 15px);
+      font-size: clamp(13px, 3.2vw, 15px);
     }
 
     /* Tabs Bar (Mobile Optimized) */
@@ -192,7 +281,7 @@
       overflow-x: auto;
       display: flex;
       justify-content: center;
-      padding-bottom: 8px;
+      padding-bottom: 12px;
       scrollbar-width: none;
     }
     .tabs-wrapper::-webkit-scrollbar {
@@ -213,7 +302,7 @@
       background: transparent;
       color: var(--mute);
       padding: 10px 18px;
-      min-height: 44px;
+      min-height: 42px;
       font-size: 13px;
       font-weight: 600;
       border-radius: 999px;
@@ -235,7 +324,7 @@
     .panel {
       background: var(--card);
       border-radius: var(--radius);
-      padding: 24px;
+      padding: 26px;
       display: none;
     }
 
@@ -244,10 +333,9 @@
       animation: slideUp 0.35s var(--ease);
     }
 
-    /* Grid Layouts */
     .grid-2 {
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
+      grid-template-columns: 1.05fr 0.95fr;
       gap: 28px;
     }
 
@@ -286,7 +374,7 @@
       background: var(--soft);
       color: var(--ink);
       padding: 0 16px;
-      height: 44px;
+      height: 42px;
       border-radius: 999px;
       font-size: 13px;
       font-weight: 500;
@@ -344,7 +432,7 @@
       border: 0;
       color: var(--ink);
       font-family: 'JetBrains Mono', monospace;
-      font-size: 16px; /* iOS Safari zoom fix */
+      font-size: 16px;
       font-weight: 500;
     }
 
@@ -379,7 +467,7 @@
 
     .checkerboard {
       width: 100%;
-      max-width: 260px;
+      max-width: 280px;
       aspect-ratio: 16/9;
       border-radius: 10px;
       background-image: 
@@ -446,6 +534,129 @@
       transform: none;
     }
 
+    /* HTML5 Viewer Tab Stilleri */
+    .viewer-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .viewer-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .viewer-btn {
+      border: 0;
+      background: var(--soft);
+      color: var(--ink);
+      height: 36px;
+      padding: 0 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, transform 0.2s var(--ease);
+    }
+
+    .viewer-btn:hover {
+      background: var(--soft-hover);
+      transform: translateY(-1px);
+    }
+
+    .viewer-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+    }
+
+    .viewer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      min-height: 420px;
+    }
+
+    @media (max-width: 820px) {
+      .viewer-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .editor-wrapper {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .code-editor {
+      width: 100%;
+      height: 100%;
+      min-height: 380px;
+      background: var(--soft);
+      color: var(--ink);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 16px;
+      border: 0;
+      border-radius: 12px;
+      resize: vertical;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    .preview-frame-wrapper {
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      min-height: 380px;
+    }
+
+    .preview-header {
+      height: 34px;
+      background: var(--soft);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+    }
+
+    .preview-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--mute);
+      opacity: 0.5;
+    }
+
+    .preview-header span {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--mute);
+      letter-spacing: 0.04em;
+    }
+
+    .sandbox-frame {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #ffffff;
+    }
+
     /* Icon Panel */
     .search-bar {
       display: flex;
@@ -470,7 +681,7 @@
       border: 0;
       background: transparent;
       color: var(--ink);
-      font-size: 16px; /* iOS Safari zoom fix */
+      font-size: 16px;
     }
 
     .icons-grid {
@@ -614,7 +825,7 @@
       color: var(--acc-ink);
     }
 
-    /* Toast Accessible Notification */
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -640,7 +851,6 @@
       opacity: 1;
     }
 
-    /* Animasyonlar & Reduced Motion */
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -657,12 +867,35 @@
 </head>
 <body>
 
+  <!-- iPhone Alt Çubuğu Esintili Üst Hızlı Erişim Dock'u -->
+  <div class="ios-island-anchor" id="iosIslandAnchor">
+    <div class="ios-indicator-bar" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Hızlı Erişim Çubuğu"></div>
+    <nav class="ios-dock" aria-label="Hızlı Araç Seçimi">
+      <button type="button" class="dock-btn" data-switch-tab="canvas" title="Boş PNG Üretici" aria-label="PNG Üreticiye Git">
+        <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+      </button>
+      <button type="button" class="dock-btn" data-switch-tab="html" title="HTML5 Canlı Önizleme" aria-label="HTML5 Canlı Önizlemeye Git">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+      </button>
+      <button type="button" class="dock-btn" data-switch-tab="icons" title="İkonlar & Kütüphaneler" aria-label="İkon Kitaplığına Git">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m10 15 5-3-5-3v6Z"/></svg>
+      </button>
+      <button type="button" class="dock-btn" data-switch-tab="colors" title="Renk & CSS" aria-label="Renk Araçlarına Git">
+        <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+      </button>
+      <div class="dock-divider"></div>
+      <button type="button" class="dock-btn" id="dockThemeBtn" title="Temayı Değiştir" aria-label="Hızlı Tema Değiştir">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+      </button>
+    </nav>
+  </div>
+
   <header>
     <a href="#" class="logo" aria-label="IDW Studio Ana Sayfa">
       <span>i</span><span>d</span><span>w</span>
       <span style="font-weight:400; color:var(--mute); margin-left:6px; font-size:15px;">tools</span>
     </a>
-    <button class="btn-circle" id="themeToggleBtn" type="button" aria-label="Temayı Açık/Koyu Değiştir" aria-live="polite">
+    <button class="btn-circle" id="themeToggleBtn" type="button" aria-label="Temayı Açık/Koyu Değiştir">
       <svg id="themeIcon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
     </button>
   </header>
@@ -670,12 +903,13 @@
   <main>
     <div class="hero">
       <h1>Hafif ve Sade Tasarım Araçları</h1>
-      <p>Özel çözünürlüklü şeffaf PNG üretici, arama özellikli ikonlar ve CSS araçları.</p>
+      <p>Özel çözünürlüklü PNG üretici, canlı HTML5 görüntüleyici ve tasarımcı kaynakları.</p>
     </div>
 
     <div class="tabs-wrapper">
       <div class="tabs" role="tablist" aria-label="Tasarım Araçları Sekmeleri">
         <button class="tab-btn" role="tab" id="tab-canvas" aria-selected="true" aria-controls="panel-canvas" tabindex="0">Boş PNG Üretici</button>
+        <button class="tab-btn" role="tab" id="tab-html" aria-selected="false" aria-controls="panel-html" tabindex="-1">Online HTML5 Viewer</button>
         <button class="tab-btn" role="tab" id="tab-icons" aria-selected="false" aria-controls="panel-icons" tabindex="-1">İkonlar &amp; Kaynaklar</button>
         <button class="tab-btn" role="tab" id="tab-colors" aria-selected="false" aria-controls="panel-colors" tabindex="-1">Renk &amp; CSS</button>
       </div>
@@ -751,7 +985,41 @@
       </div>
     </section>
 
-    <!-- 2. PANEL: İKONLAR & HIZLI KAYNAKLAR -->
+    <!-- 2. PANEL: ONLINE HTML5 VIEWER (YENİ) -->
+    <section id="panel-html" class="panel" role="tabpanel" aria-labelledby="tab-html" tabindex="0" hidden>
+      <div class="viewer-toolbar">
+        <span class="label" style="margin-bottom:0;">HTML5 / CSS / JS Sandbox</span>
+        <div class="viewer-actions">
+          <button type="button" class="viewer-btn" id="htmlTemplateBtn">
+            <svg viewBox="0 0 24 24"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            Şablon Yükle
+          </button>
+          <button type="button" class="viewer-btn" id="htmlCopyBtn">
+            <svg viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            Kodu Kopyala
+          </button>
+          <button type="button" class="viewer-btn" id="htmlClearBtn">Temizle</button>
+        </div>
+      </div>
+
+      <div class="viewer-grid">
+        <div class="editor-wrapper">
+          <label for="htmlCodeInput" class="sr-only">HTML5 Kod Editörü</label>
+          <textarea id="htmlCodeInput" class="code-editor" spellcheck="false" placeholder="Buraya HTML, stil (<style>) veya script (<script>) yazın..."></textarea>
+        </div>
+        <div class="preview-frame-wrapper">
+          <div class="preview-header">
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+            <span>CANLI ÇIKTI</span>
+          </div>
+          <iframe id="htmlSandboxFrame" class="sandbox-frame" sandbox="allow-scripts" title="Canlı HTML5 Önizleme"></iframe>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. PANEL: İKONLAR & HIZLI KAYNAKLAR -->
     <section id="panel-icons" class="panel" role="tabpanel" aria-labelledby="tab-icons" tabindex="0" hidden>
       <div class="search-bar" role="search">
         <label for="iconSearch" class="sr-only">İkonlarda ara</label>
@@ -760,9 +1028,7 @@
       </div>
 
       <span class="label" id="iconsGridLabel">Tıkla ve SVG Kodunu Kopyala</span>
-      <div class="icons-grid" id="iconsGrid" aria-labelledby="iconsGridLabel">
-        <!-- JS ile dinamik render edilecek -->
-      </div>
+      <div class="icons-grid" id="iconsGrid" aria-labelledby="iconsGridLabel"></div>
 
       <span class="label" style="margin-top:28px;">Açık Kaynak Tasarımcı Kitaplıkları</span>
       <div class="resources-grid">
@@ -797,7 +1063,7 @@
       </div>
     </section>
 
-    <!-- 3. PANEL: RENK & CSS ARAÇLARI -->
+    <!-- 4. PANEL: RENK & CSS ARAÇLARI -->
     <section id="panel-colors" class="panel" role="tabpanel" aria-labelledby="tab-colors" tabindex="0" hidden>
       <div class="form-group">
         <label for="colorPickerInput" class="label">Canlı Renk Seçimi</label>
@@ -837,37 +1103,33 @@
     (function () {
       'use strict';
 
-      /* --- 1. Güvenli Clipboard ve Fallback Sistemi --- */
+      /* --- 1. Clipboard & Fallback Motoru --- */
       async function copyText(text) {
         if (!text) return false;
         if (navigator.clipboard && window.isSecureContext) {
           try {
             await navigator.clipboard.writeText(text);
             return true;
-          } catch (err) {
-            // İzin verilmemesi veya context hatasında fallback'e geç
-          }
+          } catch (err) {}
         }
-        // Geriye dönük uyumluluk textarea fallback
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.top = '-9999px';
-        textArea.style.left = '-9999px';
-        textArea.setAttribute('readonly', '');
-        document.body.appendChild(textArea);
-        textArea.select();
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '-9999px';
+        ta.setAttribute('readonly', '');
+        document.body.appendChild(ta);
+        ta.select();
         let success = false;
         try {
           success = document.execCommand('copy');
         } catch (e) {
           success = false;
         }
-        document.body.removeChild(textArea);
+        document.body.removeChild(ta);
         return success;
       }
 
-      /* --- 2. Toast Bildirimi --- */
+      /* --- 2. Erişilebilir Toast --- */
       const Toast = {
         elem: document.getElementById('toastNotification'),
         timer: null,
@@ -882,9 +1144,10 @@
         }
       };
 
-      /* --- 3. Tema Yönetimi ve Kalıcılık --- */
+      /* --- 3. Tema Yönetimi --- */
       const Theme = {
         btn: document.getElementById('themeToggleBtn'),
+        dockBtn: document.getElementById('dockThemeBtn'),
         icon: document.getElementById('themeIcon'),
         sunPath: 'M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z',
         moonPath: 'M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z',
@@ -893,21 +1156,23 @@
           const current = document.documentElement.getAttribute('data-theme') || 'dark';
           this.updateUI(current);
 
-          this.btn.addEventListener('click', () => {
+          const toggle = () => {
             const now = document.documentElement.getAttribute('data-theme');
             const next = now === 'dark' ? 'light' : 'dark';
             document.documentElement.setAttribute('data-theme', next);
             localStorage.setItem('idw_theme', next);
             this.updateUI(next);
             Toast.show(next === 'dark' ? 'Koyu tema aktif' : 'Açık tema aktif');
-          });
+          };
 
-          // Sistem tema değişikliklerini dinleme (kullanıcı tercih kaydetmediyse)
+          this.btn.addEventListener('click', toggle);
+          if (this.dockBtn) this.dockBtn.addEventListener('click', toggle);
+
           window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             if (!localStorage.getItem('idw_theme')) {
-              const theme = e.matches ? 'dark' : 'light';
-              document.documentElement.setAttribute('data-theme', theme);
-              this.updateUI(theme);
+              const th = e.matches ? 'dark' : 'light';
+              document.documentElement.setAttribute('data-theme', th);
+              this.updateUI(th);
             }
           });
         },
@@ -916,11 +1181,11 @@
           if (this.icon) {
             this.icon.innerHTML = `<path d="${theme === 'dark' ? this.moonPath : this.sunPath}"/>`;
           }
-          this.btn.setAttribute('aria-label', `Geçerli tema: ${theme}. Değiştirmek için tıkla.`);
+          this.btn.setAttribute('aria-label', `Mevcut tema: ${theme}. Değiştirmek için tıkla.`);
         }
       };
 
-      /* --- 4. Erişilebilir Sekme (WAI-ARIA Tabs) --- */
+      /* --- 4. Erişilebilir Sekmeler (WAI-ARIA Tabs) & iPhone Dock Entegrasyonu --- */
       const Tabs = {
         tabs: Array.from(document.querySelectorAll('.tabs [role="tab"]')),
         panels: Array.from(document.querySelectorAll('main [role="tabpanel"]')),
@@ -929,6 +1194,19 @@
           this.tabs.forEach((tab) => {
             tab.addEventListener('click', () => this.activateTab(tab));
             tab.addEventListener('keydown', (e) => this.handleKeydown(e));
+          });
+
+          // Üst iPhone Bar butonlarıyla sekme geçişi
+          document.querySelectorAll('[data-switch-tab]').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              const targetKey = btn.getAttribute('data-switch-tab');
+              const targetTab = document.getElementById(`tab-${targetKey}`);
+              if (targetTab) {
+                targetTab.focus();
+                this.activateTab(targetTab);
+                Toast.show(`${targetTab.textContent.trim()} açıldı`);
+              }
+            });
           });
         },
 
@@ -971,7 +1249,101 @@
         }
       };
 
-      /* --- 5. PNG Canvas Oluşturucu & Doğrulama --- */
+      /* --- 5. Online HTML5 Viewer Motoru --- */
+      const HtmlViewer = {
+        editor: document.getElementById('htmlCodeInput'),
+        frame: document.getElementById('htmlSandboxFrame'),
+        btnTemplate: document.getElementById('htmlTemplateBtn'),
+        btnCopy: document.getElementById('htmlCopyBtn'),
+        btnClear: document.getElementById('htmlClearBtn'),
+        timer: null,
+
+        sampleTemplate: `<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 90vh;
+      margin: 0;
+      background: #0f1015;
+      color: #f3f4f8;
+    }
+    .card {
+      background: #171821;
+      padding: 32px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 14px 40px rgba(0,0,0,0.4);
+      max-width: 320px;
+    }
+    h2 { margin: 0 0 8px; font-size: 20px; }
+    p { color: #8e92a8; font-size: 13px; line-height: 1.5; margin: 0 0 20px; }
+    button {
+      background: #737fe6;
+      color: #fff;
+      border: 0;
+      padding: 10px 22px;
+      border-radius: 999px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover { transform: scale(1.05); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>IDW Preview</h2>
+    <p>Canlı HTML, stil ve script bileşenlerini anında test edin.</p>
+    <button onclick="alert('IDW Engine Çalışıyor!')">Etkileşim Testi</button>
+  </div>
+</body>
+</html>`,
+
+        init() {
+          if (!this.editor || !this.frame) return;
+
+          // Başlangıç şablonu
+          this.editor.value = this.sampleTemplate;
+          this.render();
+
+          // Canlı debounce render (300ms)
+          this.editor.addEventListener('input', () => {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => this.render(), 300);
+          });
+
+          this.btnTemplate.addEventListener('click', () => {
+            this.editor.value = this.sampleTemplate;
+            this.render();
+            Toast.show('Örnek şablon yüklendi');
+          });
+
+          this.btnCopy.addEventListener('click', async () => {
+            const ok = await copyText(this.editor.value);
+            if (ok) Toast.show('HTML kodu panoya kopyalandı');
+          });
+
+          this.btnClear.addEventListener('click', () => {
+            this.editor.value = '';
+            this.render();
+            Toast.show('Editör temizlendi');
+          });
+        },
+
+        render() {
+          const code = this.editor.value;
+          this.frame.srcdoc = code;
+        }
+      };
+
+      /* --- 6. PNG Canvas Oluşturucu --- */
       const CanvasGenerator = {
         wInput: document.getElementById('widthInput'),
         hInput: document.getElementById('heightInput'),
@@ -990,12 +1362,10 @@
         currentFill: 'trans',
 
         init() {
-          // Input dinleyicileri
           this.wInput.addEventListener('input', () => this.handleDimensionsChange());
           this.hInput.addEventListener('input', () => this.handleDimensionsChange());
           this.bgPicker.addEventListener('input', () => this.updatePreview());
 
-          // Preset Chips dinleyici
           this.presetChips.addEventListener('click', (e) => {
             const chip = e.target.closest('[role="radio"]');
             if (!chip) return;
@@ -1006,7 +1376,6 @@
             this.handleDimensionsChange();
           });
 
-          // Fill Chips dinleyici
           this.fillChips.addEventListener('click', (e) => {
             const chip = e.target.closest('[role="radio"]');
             if (!chip) return;
@@ -1017,9 +1386,7 @@
             this.updatePreview();
           });
 
-          // İndirme butonu
           this.dlBtn.addEventListener('click', () => this.download());
-
           this.handleDimensionsChange();
         },
 
@@ -1070,7 +1437,7 @@
           const h = parseInt(this.hInput.value, 10);
 
           if (!this.validateDimension(w) || !this.validateDimension(h)) {
-            Toast.show('Hata: Piksel değerleri 1 ile 8192 arasında olmalıdır.');
+            Toast.show('Hata: Piksel aralığı 1 ile 8192 arasında olmalıdır.');
             return;
           }
 
@@ -1091,10 +1458,7 @@
           }
 
           this.canvas.toBlob((blob) => {
-            if (!blob) {
-              Toast.show('Canvas oluşturulamadı');
-              return;
-            }
+            if (!blob) return;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.download = `idw-canvas-${w}x${h}-${this.currentFill}.png`;
@@ -1106,7 +1470,7 @@
         }
       };
 
-      /* --- 6. İkon Seti & Arama --- */
+      /* --- 7. İkon Seti & Arama --- */
       const IconLibrary = {
         grid: document.getElementById('iconsGrid'),
         search: document.getElementById('iconSearch'),
@@ -1119,8 +1483,6 @@
           { name: 'code', svg: '<polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/>' },
           { name: 'palette', svg: '<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/>' },
           { name: 'layers', svg: '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>' },
-          { name: 'copy', svg: '<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>' },
-          { name: 'check', svg: '<polyline points="20 6 9 17 4 12"/>' },
           { name: 'sparkles', svg: '<path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>' },
           { name: 'box', svg: '<path d="21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>' }
         ],
@@ -1129,8 +1491,7 @@
           this.render(this.data);
           this.search.addEventListener('input', (e) => {
             const query = e.target.value.trim().toLowerCase();
-            const filtered = this.data.filter(item => item.name.includes(query));
-            this.render(filtered);
+            this.render(this.data.filter(item => item.name.includes(query)));
           });
         },
 
@@ -1151,11 +1512,7 @@
 
             btn.addEventListener('click', async () => {
               const copied = await copyText(fullSvg);
-              if (copied) {
-                Toast.show(`"${item.name}" SVG panoya kopyalandı`);
-              } else {
-                Toast.show('Kopyalama başarısız oldu');
-              }
+              if (copied) Toast.show(`"${item.name}" SVG panoya kopyalandı`);
             });
 
             this.grid.appendChild(btn);
@@ -1163,7 +1520,7 @@
         }
       };
 
-      /* --- 7. Renk & CSS Çevirici --- */
+      /* --- 8. Renk & CSS Çevirici --- */
       const ColorTool = {
         picker: document.getElementById('colorPickerInput'),
         hexText: document.getElementById('colorHexText'),
@@ -1172,14 +1529,13 @@
 
         init() {
           this.picker.addEventListener('input', () => this.update());
-          
-          // data-copy-target kullanan butonlar
+
           document.querySelectorAll('[data-copy-target]').forEach(btn => {
             btn.addEventListener('click', async () => {
-              const targetId = btn.getAttribute('data-copy-target');
-              const targetElem = document.getElementById(targetId);
-              if (targetElem) {
-                const text = targetElem.textContent.trim();
+              const id = btn.getAttribute('data-copy-target');
+              const el = document.getElementById(id);
+              if (el) {
+                const text = el.textContent.trim();
                 const ok = await copyText(text);
                 if (ok) Toast.show(`Kopyalandı: ${text}`);
               }
@@ -1193,13 +1549,11 @@
           const hex = this.picker.value;
           this.hexText.textContent = hex;
 
-          // Hex -> RGB
           const r = parseInt(hex.slice(1, 3), 16);
           const g = parseInt(hex.slice(3, 5), 16);
           const b = parseInt(hex.slice(5, 7), 16);
           this.rgbText.textContent = `rgb(${r}, ${g}, ${b})`;
 
-          // RGB -> HSL
           const rN = r / 255, gN = g / 255, bN = b / 255;
           const max = Math.max(rN, gN, bN), min = Math.min(rN, gN, bN);
           let h, s, l = (max + min) / 2;
@@ -1224,6 +1578,7 @@
       document.addEventListener('DOMContentLoaded', () => {
         Theme.init();
         Tabs.init();
+        HtmlViewer.init();
         CanvasGenerator.init();
         IconLibrary.init();
         ColorTool.init();
